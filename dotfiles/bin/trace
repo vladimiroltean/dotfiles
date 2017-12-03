@@ -1,3 +1,0 @@
-#!/bin/bash
-
-PS4='Line ${LINENO}: ' bash -x "$@"

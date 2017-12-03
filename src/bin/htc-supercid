@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# sudo fastboot oem readcid
+# returned H3G__001
+sudo fastboot oem writecid 11111111

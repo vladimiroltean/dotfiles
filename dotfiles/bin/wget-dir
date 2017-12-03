@@ -1,3 +1,0 @@
-#!/bin/bash
-
-wget -r --no-parent --reject "index.html*" "$@"
