@@ -47,9 +47,8 @@ install() {
 
 	# Display warning
 	read -p "======  Your old dotfiles are located inside ${dotfiles_old_dir}. Would you like to keep them? [y/N] " response
-	if [[ -z "${response+x}" ]]; then
-		response='N'
-	fi
+	[[ -z "${response:+x}" ]] && response='N'
+
 	case $response in
 	[nN][oO]|[nN])
 		echo "deleting"
