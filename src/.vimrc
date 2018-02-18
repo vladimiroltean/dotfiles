@@ -22,6 +22,47 @@ let &backupdir=s:vim_backup
 let &undodir=s:vim_undo
 let &dir=s:vim_swap
 
+call plug#begin('~/.vim/plugged')
+
+Plug 'lervag/vimtex'
+Plug 'https://github.com/tpope/vim-dispatch'
+" Provides C-Up and C-Down maps for swapping lines
+Plug 'tpope/vim-unimpaired'
+Plug 'https://github.com/vim-scripts/Colour-Sampler-Pack'
+Plug 'https://github.com/bronson/vim-trailing-whitespace', { 'for': ['c', 'cpp', 'vim'] }
+Plug 'scrooloose/nerdtree' ", { 'on': ['NERDTreeToggle', 'NERDTree'] }
+" Handy mappings for <Leader>ci etc
+Plug 'scrooloose/nerdcommenter'
+" Handy search with <C>-f
+Plug 'rking/ag.vim', { 'on': 'Ag' }
+" Fuzzy file search
+Plug 'https://github.com/ctrlpvim/ctrlp.vim' ", { 'on': 'CtrlP' }
+" Accelerate motions with <Leader><Leader>w etc
+Plug 'https://github.com/easymotion/vim-easymotion'
+" Provides the handy info in statusbar and left of buffer for modified files
+Plug 'airblade/vim-gitgutter' ", { 'on': 'GitGutterToggle' }
+" Provides mappings for git checkout, branch etc
+Plug 'tpope/vim-fugitive'
+" Provides handy commands like :SudoWrite etc
+Plug 'tpope/vim-eunuch'
+" Easy searching through Vim change list
+Plug 'vim-scripts/Gundo', { 'on': 'GundoToggle' }
+Plug 'majutsushi/tagbar' ", { 'on': 'TagbarToggle' }
+" Syntax-aware % matching
+Plug 'tmhedberg/matchit'
+Plug 'drn/zoomwin-vim', { 'on': 'ZoomWin' }
+" For vimpager compatibility with git colors
+Plug 'https://github.com/vim-scripts/AnsiEsc.vim'
+" For marks
+Plug 'kshenoy/vim-signature'
+" At match %d out of %d matched
+Plug 'google/vim-searchindex'
+" Vim / Tmux pane split integration
+Plug 'christoomey/vim-tmux-navigator'
+
+" Add plugins to &runtimepath
+call plug#end()
+
 " Maintain persistent undo history of files
 set undofile
 " For files edited outside of vim
@@ -163,47 +204,6 @@ if empty(glob('~/.vim/autoload/plug.vim'))
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
-
-call plug#begin('~/.vim/plugged')
-
-Plug 'lervag/vimtex'
-Plug 'https://github.com/tpope/vim-dispatch'
-" Provides C-Up and C-Down maps for swapping lines
-Plug 'tpope/vim-unimpaired'
-Plug 'https://github.com/vim-scripts/Colour-Sampler-Pack'
-Plug 'https://github.com/bronson/vim-trailing-whitespace', { 'for': ['c', 'cpp', 'vim'] }
-Plug 'scrooloose/nerdtree' ", { 'on': ['NERDTreeToggle', 'NERDTree'] }
-" Handy mappings for <Leader>ci etc
-Plug 'scrooloose/nerdcommenter'
-" Handy search with <C>-f
-Plug 'rking/ag.vim', { 'on': 'Ag' }
-" Fuzzy file search
-Plug 'https://github.com/ctrlpvim/ctrlp.vim' ", { 'on': 'CtrlP' }
-" Accelerate motions with <Leader><Leader>w etc
-Plug 'https://github.com/easymotion/vim-easymotion'
-" Provides the handy info in statusbar and left of buffer for modified files
-Plug 'airblade/vim-gitgutter' ", { 'on': 'GitGutterToggle' }
-" Provides mappings for git checkout, branch etc
-Plug 'tpope/vim-fugitive'
-" Provides handy commands like :SudoWrite etc
-Plug 'tpope/vim-eunuch'
-" Easy searching through Vim change list
-Plug 'vim-scripts/Gundo', { 'on': 'GundoToggle' }
-Plug 'majutsushi/tagbar' ", { 'on': 'TagbarToggle' }
-" Syntax-aware % matching
-Plug 'tmhedberg/matchit'
-Plug 'drn/zoomwin-vim', { 'on': 'ZoomWin' }
-" For vimpager compatibility with git colors
-Plug 'https://github.com/vim-scripts/AnsiEsc.vim'
-" For marks
-Plug 'kshenoy/vim-signature'
-" At match %d out of %d matched
-Plug 'google/vim-searchindex'
-" Vim / Tmux pane split integration
-Plug 'christoomey/vim-tmux-navigator'
-
-" Add plugins to &runtimepath
-call plug#end()
 
 autocmd! User YouCompleteMe if !has('vim_starting') | call youcompleteme#Enable() | endif
 
