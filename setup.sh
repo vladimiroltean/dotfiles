@@ -22,13 +22,15 @@ backup() {
 install() {
 	echo "====== Checking for junk left by previous runs of this tool."
 	if [[ -d ${dotfiles_old_dir} ]]; then
-		read -p \
-		"Folder ${dotfiles_old_dir} exists. Your current dotfiles cannot be backed up without overwriting it. " \
-		"By typing yes, you will delete the backup directory. By typing no, you will merge the backup directory with your current dotfiles." \
-		"Which one do you choose? [Y/n] " response
-		if [[ -z "${response+x}" ]]; then
-			response='Y'
-		fi
+		prompt=$(cat <<-EOF
+		Folder ${dotfiles_old_dir} exists. Your current dotfiles cannot be backed up without overwriting it.
+		By typing yes, you will delete the backup directory. By typing no, you will merge the backup directory with your current dotfiles.
+		Which one do you choose? [Y/n] 
+		EOF
+		)
+		read -p "${prompt}" response
+		[[ -z "${response:+x}" ]] && response='Y'
+
 		case $response in
 		[yY][eE][sS]|[yY])
 			echo "deleting"
