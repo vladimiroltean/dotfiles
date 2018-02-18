@@ -4,7 +4,7 @@ set -e -u -o pipefail
 
 cwd="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 dotfiles_dir="${cwd}/src"
-dotfiles_old_dir="${cwd}/src.old"
+dotfiles_old_dir="${cwd}/src.bak"
 
 backup() {
 	echo "====== Backing up any existing dotfiles."
@@ -14,10 +14,9 @@ backup() {
 	for dotfile in $(find . -type f); do
 		if [ -e ${HOME}/${dotfile} ]; then
 			mkdir -p $(dirname ${dotfiles_old_dir}/$dotfile)
-			cp -v "${HOME}/${dotfile}" "${dotfiles_dir}/${dotfile}"
+			cp -v "${HOME}/${dotfile}" "${dotfiles_old_dir}/${dotfile}"
 		fi
 	done
-	rsync -avr "${HOME}/bin/" "${dotfiles_dir}/bin"
 }
 
 install() {
