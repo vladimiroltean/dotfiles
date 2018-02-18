@@ -51,18 +51,21 @@ install() {
 
 	case $response in
 	[nN][oO]|[nN])
-		echo "deleting"
+		echo "====== Deleting backup..."
 		rm -r ${dotfiles_old_dir}
 		;;
 	esac
 
-	if ! grep "bashrc.after" "${HOME}/.bashrc"; then
-		cat >> "${HOME}/.bashrc" <<-EOF
+	if ! grep "bashrc.after" "${HOME}/.bashrc" >/dev/null; then
+		echo "appending .bashrc.after to .bashrc"
+		cat >> "${HOME}/.bashrc" <<-"EOF"
 			if [ -f ~/.bashrc.after ]; then
 				. ~/.bashrc.after
 			fi
 		EOF
 	fi
+
+	echo "====== Setup done."
 }
 
 usage() {
