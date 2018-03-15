@@ -10,12 +10,12 @@ if filewritable(s:vim_backup) == 0 && exists("*mkdir")
     call mkdir(s:vim_backup, "p", 0700)
 endif
 let s:vim_undo = expand('$HOME/.vim/.undo')
-if filewritable(s:vim_backup) == 0 && exists("*mkdir")
-    call mkdir(s:vim_backup, "p", 0700)
+if filewritable(s:vim_undo) == 0 && exists("*mkdir")
+    call mkdir(s:vim_undo, "p", 0700)
 endif
 let s:vim_swap = expand('$HOME/.vim/.swap')
-if filewritable(s:vim_backup) == 0 && exists("*mkdir")
-    call mkdir(s:vim_backup, "p", 0700)
+if filewritable(s:vim_swap) == 0 && exists("*mkdir")
+    call mkdir(s:vim_swap, "p", 0700)
 endif
 
 let &backupdir=s:vim_backup
