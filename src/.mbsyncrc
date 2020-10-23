@@ -1,0 +1,120 @@
+Create Both
+Expunge Both
+SyncState *
+
+IMAPAccount gmail
+Host imap.gmail.com
+User olteanv@gmail.com
+PassCmd "secret-tool lookup user tigrisor domain gmail.com"
+SSLType IMAPS
+AuthMechs LOGIN
+PipelineDepth 30
+
+IMAPStore gmail-remote
+Account gmail
+
+MaildirStore gmail-local
+Path /storage/mailbox/vladi/gmail/
+Inbox /storage/mailbox/vladi/gmail/inbox
+
+Channel gmail-inbox
+Master :gmail-remote:
+Slave :gmail-local:
+Patterns "INBOX"
+
+Channel gmail-drafts
+Master :gmail-remote:"[Gmail]/Drafts"
+Slave :gmail-local:drafts
+
+Channel gmail-trash
+Master :gmail-remote:"Trash"
+Slave :gmail-local:trash
+
+Channel gmail-sent
+Master :gmail-remote:"[Gmail]/Sent Mail"
+Slave :gmail-local:sent
+
+Channel gmail-netdev
+Master :gmail-remote:"netdev"
+Slave :gmail-local:netdev
+
+Channel gmail-u-boot
+Master :gmail-remote:"u-boot"
+Slave :gmail-local:u-boot
+
+Channel gmail-linux-serial
+Master :gmail-remote:"linux-serial"
+Slave :gmail-local:linux-serial
+
+Channel gmail-linux-spi
+Master :gmail-remote:"linux-spi"
+Slave :gmail-local:linux-spi
+
+Channel gmail-rcu
+Master :gmail-remote:"rcu"
+Slave :gmail-local:rcu
+
+Channel gmail-lkml
+Master :gmail-remote:"lkml"
+Slave :gmail-local:lkml
+
+Channel gmail-linux-rt-users
+Master :gmail-remote:"linux-rt-users"
+Slave :gmail-local:linux-rt-users
+
+Channel gmail-linux-arm-msm
+Master :gmail-remote:"linux-arm-msm"
+Slave :gmail-local:linux-arm-msm
+
+Channel gmail-buildroot
+Master :gmail-remote:"buildroot"
+Slave :gmail-local:buildroot
+
+Channel gmail-devicetree
+Master :gmail-remote:"devicetree"
+Slave :gmail-local:devicetree
+
+Group gmail
+Channel gmail-inbox
+Channel gmail-drafts
+Channel gmail-trash
+Channel gmail-sent
+Channel gmail-netdev
+Channel gmail-linux-serial
+Channel gmail-linux-spi
+Channel gmail-rcu
+Channel gmail-lkml
+Channel gmail-linux-rt-users
+Channel gmail-linux-arm-msm
+Channel gmail-buildroot
+Channel gmail-devicetree
+
+
+#################################################
+
+IMAPAccount work
+Host localhost
+Port 1143
+AuthMechs LOGIN
+User vladimir.oltean@nxp.com
+PassCmd "secret-tool lookup user tigrisor domain nxp.com"
+SSLType None
+Timeout 0
+
+IMAPStore work-remote
+Account work
+
+MaildirStore work-local
+Subfolders Verbatim
+Path /storage/mailbox/vladi/work/
+Inbox /storage/mailbox/vladi/work/inbox
+
+Channel work-inbox
+Master :work-remote:
+Slave :work-local:
+Patterns * !Archives
+Sync All
+SyncState *
+
+Group work
+Channel work-inbox

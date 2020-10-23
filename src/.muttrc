@@ -1,0 +1,133 @@
+set smtp_authenticators = "login"
+set edit_headers = yes
+
+# macro index G "!mbsync -a^M" "Update through mbsync"
+set move = no
+set sort = threads
+# set sort_aux = reverse-date #-received
+set sort_browser=date
+set sort_aux=reverse-last-date-received
+
+bind pager <up> previous-line
+bind pager <down> next-line
+macro index,pager,attach z '<enter-command>source ~/.mutt/bottom-post<enter>'
+macro index,pager,attach Z '<enter-command>source ~/.mutt/top-post<enter>'
+bind index,pager,attach R group-reply
+bind attach <Enter> view-mailcap
+bind attach <Return> view-mailcap
+
+bind pager j next-line
+bind pager k previous-line
+bind attach,index,pager \CD next-page
+bind attach,index,pager \CU previous-page
+bind pager g top
+bind pager G bottom
+bind attach,index g first-entry
+bind attach,index G last-entry
+
+bind attach,index,pager N search-reverse
+
+# Macros for managing patches
+macro index,pager (t '<tag-prefix><pipe-entry>~/bin/mailtogit/mail-to-mbox<return>'  "Dumps tagged patches into ~/incoming/*.mbox"
+macro index,pager (a '<tag-prefix><pipe-entry>~/bin/mailtogit/git-apply-incoming<return>'  "git am ~/incoming/*.mbox"
+macro index,pager (g '<tag-prefix><pipe-entry>~/bin/mailtogit/git-apply<return>'  "git am tagged patches"
+macro index,pager (c '<pipe-entry>~/bin/mailtogit/checkpatch<return>' "Run checkpatch on ~/incoming/*"
+macro index,pager (r '<pipe-entry>rm -f ~/incoming/*.mbox<return>'  "Nukes all ~/incoming/"
+macro index,pager (l '<pipe-entry>ls -ltr ~/incoming/<return>'  "ls -l ~/incoming/"
+macro index,pager ,t '<pipe-entry>~/bin/mailtogit/mail-to-mbox<return>'  "Dumps currently viewed patch into ~/incoming/*.mbox"
+macro index,pager ,g '<pipe-entry>~/bin/mailtogit/git-apply<return>' "git am currently viewed patch"
+macro index,pager ,a '<pipe-entry>~/bin/mailtogit/git-abort<return>' "git am --abort"
+macro index,pager ,r '<pipe-entry>~/bin/mailtogit/git-reset<return>' "git-reset --hard origin"
+
+set sidebar_visible = yes
+bind index,pager B sidebar-toggle-visible
+# How wide should the Sidebar be in screen columns?
+# Note: Some characters, e.g. Chinese, take up two columns each.
+set sidebar_width = 30
+# Should the mailbox paths be abbreviated?
+set sidebar_short_path = no
+# Number of top-level mailbox path subdirectories to truncate for display
+set sidebar_component_depth = 2
+# When abbreviating mailbox path names, use any of these characters as path
+# separators. Only the part after the last separators will be shown.
+# For file folders '/' is good. For IMAP folders, often '.' is useful.
+set sidebar_delim_chars = '/.'
+# If the mailbox path is abbreviated, should it be indented?
+set sidebar_folder_indent = no
+# Indent mailbox paths with this string.
+set sidebar_indent_string = '  '
+# Make the Sidebar only display mailboxes that contain new, or flagged,
+# mail.
+set sidebar_new_mail_only = no
+# Any mailboxes that are whitelisted will always be visible, even if the
+# sidebar_new_mail_only option is enabled.
+set sidebar_non_empty_mailbox_only = no
+# When searching for mailboxes containing new mail, should the search wrap
+# around when it reaches the end of the list?
+set sidebar_next_new_wrap = no
+# Show the Sidebar on the right-hand side of the screen
+set sidebar_on_right = no
+# The character to use as the divider between the Sidebar and the other NeoMutt
+# panels.
+set sidebar_divider_char = '|'
+# Enable extended mailbox mode to calculate total, new, and flagged
+# message counts for each mailbox.
+set mail_check_stats
+# Display the Sidebar mailboxes using this format string.
+set sidebar_format = '%B%?F? [%F]?%* %?N?%N/?%S'
+# Sort the mailboxes in the Sidebar using this method:
+#       count    – total number of messages
+#       flagged  – number of flagged messages
+#       new      – number of new messages
+#       path     – mailbox path
+#       unsorted – do not sort the mailboxes
+set sidebar_sort_method = 'unsorted'
+
+set mailcap_path = ~/.mutt/mailcap
+auto_view text/plain
+
+# Store message headers locally to speed things up.
+# If hcache is a folder, Mutt will create sub cache folders for each account which may speeds things up even more.
+set header_cache = "~/.mutt/cache"
+
+# Store messages locally to speed things up, like searching message bodies.
+# Can be the same folder as header_cache.
+# This will cost important disk usage according to your e-mail amount.
+set message_cachedir = "~/.mutt/cache"
+
+# notmuch-mutt
+macro index <F8> \
+"<enter-command>set my_old_pipe_decode=\$pipe_decode my_old_wait_key=\$wait_key nopipe_decode nowait_key<enter>\
+<shell-escape>notmuch-mutt -r --prompt search<enter>\
+<change-folder-readonly>`echo ${XDG_CACHE_HOME:-$HOME/.cache}/notmuch/mutt/results`<enter>\
+<enter-command>set pipe_decode=\$my_old_pipe_decode wait_key=\$my_old_wait_key<enter>" \
+"notmuch: search mail"
+
+macro index <F9> \
+"<enter-command>set my_old_pipe_decode=\$pipe_decode my_old_wait_key=\$wait_key nopipe_decode nowait_key<enter>\
+<pipe-message>notmuch-mutt -r thread<enter>\
+<change-folder-readonly>`echo ${XDG_CACHE_HOME:-$HOME/.cache}/notmuch/mutt/results`<enter>\
+<enter-command>set pipe_decode=\$my_old_pipe_decode wait_key=\$my_old_wait_key<enter>" \
+"notmuch: reconstruct thread"
+
+macro index <F6> \
+"<enter-command>set my_old_pipe_decode=\$pipe_decode my_old_wait_key=\$wait_key nopipe_decode nowait_key<enter>\
+<pipe-message>notmuch-mutt tag -- -inbox<enter>\
+<enter-command>set pipe_decode=\$my_old_pipe_decode wait_key=\$my_old_wait_key<enter>" \
+"notmuch: remove message from inbox"
+
+auto_view text/html
+alternative_order text/plain text/enriched text/html
+
+source ~/.mutt/colors
+# Default account
+source ~/.mutt/gmail
+
+folder-hook 'gmail' 'source ~/.mutt/gmail'
+folder-hook 'work' 'source ~/.mutt/work'
+
+reply-hook https://eur01.safelinks.protection.outlook.com '<enter-command>echo %s'
+
+# Macros for switching accounts
+macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/gmail<enter><change-folder>!<enter>'
+macro index <f3> '<sync-mailbox><enter-command>source ~/.mutt/work<enter><change-folder>!<enter>'

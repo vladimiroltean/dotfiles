@@ -1,0 +1,3 @@
+set attribution = "On %d, %n wrote:"
+set indent_string = "> "
+# set content_type = "text/plain"

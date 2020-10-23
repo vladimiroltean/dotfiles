@@ -1,0 +1,5 @@
+application/pgp-signature; vim %s
+text/plain; vim %s
+text/x-patch; vim %s
+# text/html; lynx %s; copiousoutput
+text/html; w3m -I %{charset} -T text/html; copiousoutput;

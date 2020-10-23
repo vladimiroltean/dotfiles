@@ -1,0 +1,33 @@
+set folder = "/storage/mailbox/vladi/work"
+set spoolfile = "/storage/mailbox/vladi/work/inbox"
+set postponed = "/storage/mailbox/vladi/work/Drafts"
+set trash = "+/Trash"
+set record = ""
+
+set from = "vladimir.oltean@nxp.com"
+set realname = "Vladimir Oltean"
+set use_from = yes
+
+set imap_user = "vladimir.oltean@nxp.com"
+set smtp_url="smtp://$imap_user@localhost:1025"
+# secret-tool store --label=imap user <USERNAME> domain <DOMAIN>
+source 'echo "$( pw=$( secret-tool lookup user tigrisor domain nxp.com ); echo set imap_pass=\"$pw\"; echo set smtp_pass=\"$pw\" )" |'
+
+set ssl_force_tls = no
+set ssl_starttls = no
+
+unmailboxes *
+mailboxes "=inbox"
+mailboxes "=Sent"
+mailboxes "=Drafts"
+mailboxes "=Trash"
+mailboxes "=Unsent Messages"
+mailboxes "=inbox/Announcements"
+mailboxes "=inbox/Apps"
+mailboxes "=inbox/Industrial"
+mailboxes "=inbox/Mailing lists/Boardfarm"
+mailboxes "=inbox/Mailing lists/Dash"
+mailboxes "=inbox/Mailing lists/DPAA Ethernet"
+mailboxes "=inbox/Mailing lists/ENETC Devel"
+mailboxes "=inbox/Mailing lists/ldup-devel"
+mailboxes "=inbox/Mailing lists/linux-devel"

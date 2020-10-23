@@ -1,0 +1,34 @@
+set folder = "/storage/mailbox/vladi/gmail"
+set spoolfile = "/storage/mailbox/vladi/gmail/inbox"
+set postponed = "/storage/mailbox/vladi/gmail/drafts"
+set trash = "+/trash"
+set record = ""
+
+set from = "olteanv@gmail.com"
+set realname = "Vladimir Oltean"
+set use_from = yes
+
+set imap_user = ""
+set imap_pass = ""
+# secret-tool store --label=imap user <USERNAME> domain <DOMAIN>
+source 'echo "$( pw=$( secret-tool lookup user tigrisor domain gmail.com ); echo set smtp_pass=\"$pw\" )" |'
+set smtp_url = "smtp://olteanv@smtp.gmail.com:587"
+
+set ssl_force_tls = yes
+set ssl_starttls = yes
+
+unmailboxes *
+mailboxes "=inbox"
+mailboxes "=sent"
+mailboxes "=drafts"
+mailboxes "=trash"
+mailboxes "=netdev"
+mailboxes "=buildroot"
+mailboxes "=devicetree"
+mailboxes "=linux-spi"
+mailboxes "=linux-serial"
+mailboxes "=u-boot"
+mailboxes "=rcu"
+mailboxes "=lkml"
+mailboxes "=linux-rt-users"
+mailboxes "=linux-arm-msm"

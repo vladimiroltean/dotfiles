@@ -1,0 +1,4 @@
+set attribution = "________________________________\nFrom: %F <%A>\nSent: %d\nTo: %r\nCc: %R\nSubject: %s\n"
+set indent_string = ""
+# set attribution = '<br><div style="border:none; border-top:solid #E1E1E1 1.0pt; padding:3.0pt 0in 0in 0in"><b>From:</b> %F &lt;%A&gt;<br><b>Sent:</b> %d<br><b>To:</b> %r<br><b>Cc:</b> %R<br><b>Subject:</b> %s<br>"
+# set content_type = "text/html"
