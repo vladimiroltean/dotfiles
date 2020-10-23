@@ -52,13 +52,24 @@ shopt -s autocd
 
 export PROMPT_DIRTRIM=3
 export PAGER='vimpager'
-export PATH+=":$HOME/.gem/ruby/2.2.0/bin"
 
 if [ -d ~/bin ]; then
 	export PATH=$HOME/bin:$PATH
 fi
 
+if [ -d ~/.local/bin ]; then
+	export PATH=$HOME/.local/bin:$PATH
+fi
+
+if [ -d /usr/local/npm ]; then
+	export PATH="/usr/local/npm/bin:$PATH"
+fi
+
 export USE_CCACHE=1
-export ANDROID_CCACHE_DIR="/opt/android-ccache"
-export ANDROID_CCACHE_SIZE="25G"
-export PATH="$HOME/src/platform-tools":$PATH
+export CCACHE_COMPRESS=1
+export CCACHE_DIR="/storage/android/ccache"
+export CCACHE_SIZE="100G"
+export PATH="${HOME}/src/platform-tools:${PATH}"
+
+# smatch for kernel
+export CHECK="/opt/smatch/smatch -p=kernel"
