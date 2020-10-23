@@ -29,14 +29,15 @@ Plug 'https://github.com/tpope/vim-dispatch'
 " Provides C-Up and C-Down maps for swapping lines
 Plug 'tpope/vim-unimpaired'
 Plug 'https://github.com/vim-scripts/Colour-Sampler-Pack'
-Plug 'https://github.com/bronson/vim-trailing-whitespace', { 'for': ['c', 'cpp', 'vim'] }
-Plug 'scrooloose/nerdtree' ", { 'on': ['NERDTreeToggle', 'NERDTree'] }
+Plug 'https://github.com/ntpeters/vim-better-whitespace'
+Plug 'scrooloose/nerdtree'
+Plug 'gu-fan/riv.vim'
 " Handy mappings for <Leader>ci etc
 Plug 'scrooloose/nerdcommenter'
 " Handy search with <C>-f
 Plug 'rking/ag.vim', { 'on': 'Ag' }
 " Fuzzy file search
-Plug 'https://github.com/ctrlpvim/ctrlp.vim' ", { 'on': 'CtrlP' }
+Plug 'https://github.com/ctrlpvim/ctrlp.vim'
 " Accelerate motions with <Leader><Leader>w etc
 Plug 'https://github.com/easymotion/vim-easymotion'
 " Provides the handy info in statusbar and left of buffer for modified files
