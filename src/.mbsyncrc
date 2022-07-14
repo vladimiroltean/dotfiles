@@ -18,61 +18,65 @@ Path /storage/mailbox/vladi/gmail/
 Inbox /storage/mailbox/vladi/gmail/inbox
 
 Channel gmail-inbox
-Master :gmail-remote:
-Slave :gmail-local:
+Far :gmail-remote:
+Near :gmail-local:
 Patterns "INBOX"
 
+Channel gmail-seen
+Far :gmail-remote:"Seen"
+Near :gmail-local:seen
+
 Channel gmail-drafts
-Master :gmail-remote:"[Gmail]/Drafts"
-Slave :gmail-local:drafts
+Far :gmail-remote:"[Gmail]/Drafts"
+Near :gmail-local:drafts
 
 Channel gmail-trash
-Master :gmail-remote:"Trash"
-Slave :gmail-local:trash
+Far :gmail-remote:"Trash"
+Near :gmail-local:trash
 
 Channel gmail-sent
-Master :gmail-remote:"[Gmail]/Sent Mail"
-Slave :gmail-local:sent
+Far :gmail-remote:"[Gmail]/Sent Mail"
+Near :gmail-local:sent
 
 Channel gmail-netdev
-Master :gmail-remote:"netdev"
-Slave :gmail-local:netdev
+Far :gmail-remote:"netdev"
+Near :gmail-local:netdev
 
 Channel gmail-u-boot
-Master :gmail-remote:"u-boot"
-Slave :gmail-local:u-boot
+Far :gmail-remote:"u-boot"
+Near :gmail-local:u-boot
 
 Channel gmail-linux-serial
-Master :gmail-remote:"linux-serial"
-Slave :gmail-local:linux-serial
+Far :gmail-remote:"linux-serial"
+Near :gmail-local:linux-serial
 
 Channel gmail-linux-spi
-Master :gmail-remote:"linux-spi"
-Slave :gmail-local:linux-spi
+Far :gmail-remote:"linux-spi"
+Near :gmail-local:linux-spi
 
 Channel gmail-rcu
-Master :gmail-remote:"rcu"
-Slave :gmail-local:rcu
+Far :gmail-remote:"rcu"
+Near :gmail-local:rcu
 
 Channel gmail-lkml
-Master :gmail-remote:"lkml"
-Slave :gmail-local:lkml
+Far :gmail-remote:"lkml"
+Near :gmail-local:lkml
 
 Channel gmail-linux-rt-users
-Master :gmail-remote:"linux-rt-users"
-Slave :gmail-local:linux-rt-users
+Far :gmail-remote:"linux-rt-users"
+Near :gmail-local:linux-rt-users
 
 Channel gmail-linux-arm-msm
-Master :gmail-remote:"linux-arm-msm"
-Slave :gmail-local:linux-arm-msm
+Far :gmail-remote:"linux-arm-msm"
+Near :gmail-local:linux-arm-msm
 
 Channel gmail-buildroot
-Master :gmail-remote:"buildroot"
-Slave :gmail-local:buildroot
+Far :gmail-remote:"buildroot"
+Near :gmail-local:buildroot
 
 Channel gmail-devicetree
-Master :gmail-remote:"devicetree"
-Slave :gmail-local:devicetree
+Far :gmail-remote:"devicetree"
+Near :gmail-local:devicetree
 
 Group gmail
 Channel gmail-inbox
@@ -110,8 +114,8 @@ Path /storage/mailbox/vladi/work/
 Inbox /storage/mailbox/vladi/work/inbox
 
 Channel work-inbox
-Master :work-remote:
-Slave :work-local:
+Far :work-remote:
+Near :work-local:
 Patterns * !Archives
 Sync All
 SyncState *
