@@ -28,13 +28,13 @@ bind attach,index G last-entry
 bind attach,index,pager N search-reverse
 
 # Macros for managing patches
-macro index,pager (t '<tag-prefix><pipe-entry>~/bin/mailtogit/mail-to-mbox<return>'  "Dumps tagged patches into ~/incoming/*.mbox"
+macro index,pager (t '<tag-prefix><pipe-entry>~/bin/mailtogit/mail-to-mbox-multi<return>'  "Dumps tagged patches into ~/incoming/*.mbox"
 macro index,pager (a '<tag-prefix><pipe-entry>~/bin/mailtogit/git-apply-incoming<return>'  "git am ~/incoming/*.mbox"
 macro index,pager (g '<tag-prefix><pipe-entry>~/bin/mailtogit/git-apply<return>'  "git am tagged patches"
 macro index,pager (c '<pipe-entry>~/bin/mailtogit/checkpatch<return>' "Run checkpatch on ~/incoming/*"
 macro index,pager (r '<pipe-entry>rm -f ~/incoming/*.mbox<return>'  "Nukes all ~/incoming/"
 macro index,pager (l '<pipe-entry>ls -ltr ~/incoming/<return>'  "ls -l ~/incoming/"
-macro index,pager ,t '<pipe-entry>~/bin/mailtogit/mail-to-mbox<return>'  "Dumps currently viewed patch into ~/incoming/*.mbox"
+macro index,pager ,t '<pipe-entry>~/bin/mailtogit/mail-to-mbox-single<return>'  "Dumps currently viewed patch into ~/incoming/*.mbox"
 macro index,pager ,g '<pipe-entry>~/bin/mailtogit/git-apply<return>' "git am currently viewed patch"
 macro index,pager ,a '<pipe-entry>~/bin/mailtogit/git-abort<return>' "git am --abort"
 macro index,pager ,r '<pipe-entry>~/bin/mailtogit/git-reset<return>' "git-reset --hard origin"
