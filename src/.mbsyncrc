@@ -80,6 +80,7 @@ Near :gmail-local:devicetree
 
 Group gmail
 Channel gmail-inbox
+Channel gmail-seen
 Channel gmail-drafts
 Channel gmail-trash
 Channel gmail-sent
