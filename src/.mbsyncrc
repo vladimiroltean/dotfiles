@@ -78,6 +78,10 @@ Channel gmail-devicetree
 Far :gmail-remote:"devicetree"
 Near :gmail-local:devicetree
 
+Channel gmail-debian
+Far :gmail-remote:"debian"
+Near :gmail-local:debian
+
 Group gmail
 Channel gmail-inbox
 Channel gmail-seen
@@ -93,6 +97,7 @@ Channel gmail-linux-rt-users
 Channel gmail-linux-arm-msm
 Channel gmail-buildroot
 Channel gmail-devicetree
+Channel gmail-debian
 
 
 #################################################
