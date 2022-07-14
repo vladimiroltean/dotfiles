@@ -75,3 +75,12 @@ export PATH="${HOME}/src/platform-tools:${PATH}"
 
 # smatch for kernel
 export CHECK="/opt/smatch/smatch -p=kernel"
+
+export DEBEMAIL="olteanv@gmail.com"
+export DEBFULLNAME="Vladimir Oltean"
+
+export GPG_TTY="$(tty)"
+
+alias dquilt="quilt --quiltrc=${HOME}/.quiltrc-dpkg"
+. /usr/share/bash-completion/completions/quilt
+complete -F _quilt_completion $_quilt_complete_opt dquilt
