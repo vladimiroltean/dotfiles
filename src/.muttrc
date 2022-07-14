@@ -74,7 +74,7 @@ set sidebar_divider_char = '|'
 # message counts for each mailbox.
 set mail_check_stats
 # Display the Sidebar mailboxes using this format string.
-set sidebar_format = '%B%?F? [%F]?%* %?N?%N/?%S'
+set sidebar_format = '%D%?F? [%F]?%* %?N?%N/?%S'
 # Sort the mailboxes in the Sidebar using this method:
 #       count    – total number of messages
 #       flagged  – number of flagged messages
