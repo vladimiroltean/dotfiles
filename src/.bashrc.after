@@ -65,6 +65,8 @@ if [ -d /usr/local/npm ]; then
 	export PATH="/usr/local/npm/bin:$PATH"
 fi
 
+export PATH="$PATH:/opt/cov-analysis-linux64-2021.12.1/bin"
+
 export USE_CCACHE=1
 export CCACHE_COMPRESS=1
 export CCACHE_DIR="/storage/android/ccache"
