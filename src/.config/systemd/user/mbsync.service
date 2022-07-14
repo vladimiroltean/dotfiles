@@ -4,5 +4,5 @@ Description=Mailbox synchronization service
 [Service]
 Type=oneshot
 ExecStart=mbsync -Va
-ExecStartPost=notmuch new
+# ExecStartPost=notmuch new
 RuntimeMaxSec=600
