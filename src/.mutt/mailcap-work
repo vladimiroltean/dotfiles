@@ -1,0 +1,7 @@
+application/pgp-signature; unsanitize-safelinks -i %s && vim %s
+application/octet-stream; unsanitize-safelinks -i %s && vim %s
+text/plain; unsanitize-safelinks -i %s && vim %s
+text/x-patch; unsanitize-safelinks -i %s && vim %s
+text/x-diff; unsanitize-safelinks -i %s && vim %s
+# text/html; lynx unsanitize-safelinks -i %s && %s; copiousoutput
+text/html; w3m -I %{charset} -T text/html; copiousoutput;

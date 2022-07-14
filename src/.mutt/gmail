@@ -17,6 +17,10 @@ set smtp_url = "smtp://olteanv@smtp.gmail.com:587"
 set ssl_force_tls = yes
 set ssl_starttls = yes
 
+set display_filter=""
+set editor ="vim %s"
+set mailcap_path = ~/.mutt/mailcap
+
 unmailboxes *
 mailboxes "=inbox"
 mailboxes "=seen"

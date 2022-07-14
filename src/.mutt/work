@@ -16,6 +16,10 @@ source 'echo "$( pw=$( secret-tool lookup user tigrisor domain nxp.com ); echo s
 set ssl_force_tls = no
 set ssl_starttls = no
 
+set display_filter="unsanitize-safelinks"
+set editor ="ls -la %s && unsanitize-safelinks -i %s && vim %s"
+set mailcap_path = ~/.mutt/mailcap-work
+
 unmailboxes *
 mailboxes "=inbox"
 mailboxes "=Sent"

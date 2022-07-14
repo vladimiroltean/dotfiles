@@ -83,7 +83,6 @@ set sidebar_format = '%B%?F? [%F]?%* %?N?%N/?%S'
 #       unsorted – do not sort the mailboxes
 set sidebar_sort_method = 'unsorted'
 
-set mailcap_path = ~/.mutt/mailcap
 auto_view text/plain
 
 # Store message headers locally to speed things up.
