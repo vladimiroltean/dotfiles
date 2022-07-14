@@ -19,6 +19,7 @@ set ssl_starttls = yes
 
 unmailboxes *
 mailboxes "=inbox"
+mailboxes "=seen"
 mailboxes "=sent"
 mailboxes "=drafts"
 mailboxes "=trash"
@@ -32,3 +33,4 @@ mailboxes "=rcu"
 mailboxes "=lkml"
 mailboxes "=linux-rt-users"
 mailboxes "=linux-arm-msm"
+mailboxes "=debian"
