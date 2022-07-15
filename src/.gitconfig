@@ -1,0 +1,40 @@
+[color]
+	ui = auto
+[review "review.lineageos.org"]
+	username = vladimiroltean
+[review "gerrit.omnirom.org"]
+	username = vladimiroltean
+
+# Personal
+[user]
+	name = Vladimir Oltean
+#	email = vladimir.oltean@nxp.com
+	signingkey = 2D62835FF2886BC1
+	email = olteanv@gmail.com
+[sendemail]
+	confirm = always
+	smtpencryption = tls
+	smtpserver = smtp.gmail.com
+	smtpuser = olteanv@gmail.com
+	smtpserver = outlook.office365.com
+	smtpuser = vladimir.oltean@nxp.com
+	smtpserverport = 587
+	chainreplyto = false
+#	signedoffbycc = false
+#	suppresscc = all
+	suppresscc = self
+	confirm = always
+#[format]
+#	from = "Vladimir Oltean <olteanv@gmail.com>"
+
+[credential]
+	helper = /usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret
+[core]
+	abbrev = 12
+[pretty]
+	fixes = Fixes: %h (\"%s\")
+[b4]
+#	midmask = https://lore.kernel.org/r/%s
+	midmask = https://lore.kernel.org/r/%s
+[alias]
+	b4 = "!f() { b4 am -t -o - $@ | git am -3; }; f"
