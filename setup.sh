@@ -6,17 +6,28 @@ cwd="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 dotfiles_dir="${cwd}/src"
 dotfiles_old_dir="${cwd}/src.bak"
 
-backup() {
-	echo "====== Backing up any existing dotfiles."
+__backup() {
+	local target_dir="$1"
+
 	cd ${dotfiles_dir}
 
 	# For each dotfile in our folder, retrieve the currently running version from the system instead.
 	for dotfile in $(find . -type f); do
-		if [ -e ${HOME}/${dotfile} ]; then
-			mkdir -p $(dirname ${dotfiles_old_dir}/$dotfile)
-			cp -v "${HOME}/${dotfile}" "${dotfiles_old_dir}/${dotfile}"
+		if [ -f ${HOME}/${dotfile} ]; then
+			mkdir -p $(dirname "${target_dir}/$dotfile")
+			cp -v "${HOME}/${dotfile}" "${target_dir}/${dotfile}"
 		fi
 	done
+}
+
+backup() {
+	echo "====== Backing up any existing dotfiles."
+	__backup "${dotfiles_old_dir}"
+}
+
+import() {
+	echo "====== Importing any existing dotfiles into the git tree."
+	__backup "${dotfiles_dir}"
 }
 
 install() {
@@ -43,7 +54,9 @@ install() {
 	backup
 
 	echo "====== The way is cleared, copy all new files"
-	rsync -avr "${dotfiles_dir}/" "${HOME}"
+	for dotfile in $(find . -type f); do
+		ln -sf "$(realpath ${dotfile})" "${HOME}/${dotfile}"
+	done
 
 	# Display warning
 	read -p "======  Your old dotfiles are located inside ${dotfiles_old_dir}. Would you like to keep them? [y/N] " response
@@ -72,6 +85,7 @@ usage() {
 	echo "Usage:"
 	echo "./setup.sh install"
 	echo "./setup.sh backup"
+	echo "./setup.sh import"
 	echo "./setup.sh help"
 	exit 1
 }
@@ -83,6 +97,9 @@ install)
 	;;
 backup)
 	backup
+	;;
+import)
+	import
 	;;
 *)
 	usage
