@@ -14,8 +14,8 @@ IMAPStore gmail-remote
 Account gmail
 
 MaildirStore gmail-local
-Path /storage/mailbox/vladi/gmail/
-Inbox /storage/mailbox/vladi/gmail/inbox
+Path ~/mailbox/gmail/
+Inbox ~/mailbox/gmail/inbox
 
 Channel gmail-inbox
 Far :gmail-remote:
@@ -54,6 +54,10 @@ Channel gmail-linux-spi
 Far :gmail-remote:"linux-spi"
 Near :gmail-local:linux-spi
 
+Channel gmail-linux-phy
+Far :gmail-remote:"linux-phy"
+Near :gmail-local:linux-phy
+
 Channel gmail-rcu
 Far :gmail-remote:"rcu"
 Near :gmail-local:rcu
@@ -82,6 +86,10 @@ Channel gmail-debian
 Far :gmail-remote:"debian"
 Near :gmail-local:debian
 
+Channel gmail-linuxptp
+Far :gmail-remote:"linuxptp"
+Near :gmail-local:linuxptp
+
 Group gmail
 Channel gmail-inbox
 Channel gmail-seen
@@ -98,17 +106,26 @@ Channel gmail-linux-arm-msm
 Channel gmail-buildroot
 Channel gmail-devicetree
 Channel gmail-debian
+Channel gmail-linuxptp
 
 
 #################################################
 
+# IMAPAccount work
+# Host localhost
+# Port 1143
+# AuthMechs LOGIN
+# User vladimir.oltean@nxp.com
+# PassCmd "secret-tool lookup user tigrisor domain nxp.com"
+# SSLType None
+# Timeout 0
 IMAPAccount work
-Host localhost
-Port 1143
-AuthMechs LOGIN
+Host outlook.office365.com
+AuthMechs XOAUTH2
 User vladimir.oltean@nxp.com
-PassCmd "secret-tool lookup user tigrisor domain nxp.com"
-SSLType None
+PassCmd "/opt/oauth2/get_access_token.sh"
+SSLType IMAPS
+SSLVersions TLSv1.1 TLSv1.2
 Timeout 0
 
 IMAPStore work-remote
@@ -116,8 +133,8 @@ Account work
 
 MaildirStore work-local
 Subfolders Verbatim
-Path /storage/mailbox/vladi/work/
-Inbox /storage/mailbox/vladi/work/inbox
+Path ~/mailbox/work/
+Inbox ~/mailbox/work/inbox
 
 Channel work-inbox
 Far :work-remote:
@@ -128,3 +145,31 @@ SyncState *
 
 Group work
 Channel work-inbox
+
+#################################################
+
+IMAPAccount work-test-msal
+Host outlook.office365.com
+AuthMechs XOAUTH2
+User New365User.00007@newco365.nl
+PassCmd "/opt/oauth2/get_access_token.sh"
+SSLType IMAPS
+SSLVersions TLSv1.1 TLSv1.2
+
+IMAPStore work-test-msal-remote
+Account work-test-msal
+
+MaildirStore work-test-msal-local
+Subfolders Verbatim
+Path ~/mailbox/work-test-msal/
+Inbox ~/mailbox/work-test-msal/inbox
+
+Channel work-test-msal-inbox
+Far :work-test-msal-remote:
+Near :work-test-msal-local:
+Patterns * !Archives
+Sync All
+SyncState *
+
+Group work-test-msal
+Channel work-test-msal-inbox

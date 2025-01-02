@@ -8,14 +8,14 @@
 # Personal
 [user]
 	name = Vladimir Oltean
-#	email = vladimir.oltean@nxp.com
+	email = vladimir.oltean@nxp.com
 	signingkey = 2D62835FF2886BC1
-	email = olteanv@gmail.com
+#	email = olteanv@gmail.com
 [sendemail]
 	confirm = always
 	smtpencryption = tls
-	smtpserver = smtp.gmail.com
-	smtpuser = olteanv@gmail.com
+#	smtpserver = smtp.gmail.com
+#	smtpuser = olteanv@gmail.com
 	smtpserver = outlook.office365.com
 	smtpuser = vladimir.oltean@nxp.com
 	smtpserverport = 587
@@ -33,8 +33,14 @@
 	abbrev = 12
 [pretty]
 	fixes = Fixes: %h (\"%s\")
+	backport = %h %s
 [b4]
-#	midmask = https://lore.kernel.org/r/%s
 	midmask = https://lore.kernel.org/r/%s
 [alias]
-	b4 = "!f() { b4 am -t -o - $@ | git am -3; }; f"
+	b4 = "!f() { b4 am -t -o - $@ | git am -3 --reject; }; f"
+	shazam = "!f() { b4 shazam -t $@ | git am -3 --reject; }; f"
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f

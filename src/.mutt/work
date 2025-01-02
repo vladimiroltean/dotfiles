@@ -1,6 +1,6 @@
-set folder = "/storage/mailbox/vladi/work"
-set spoolfile = "/storage/mailbox/vladi/work/inbox"
-set postponed = "/storage/mailbox/vladi/work/Drafts"
+set folder = "~/mailbox/work"
+set spoolfile = "~/mailbox/work/inbox"
+set postponed = "~/mailbox/work/Drafts"
 set trash = "+/Trash"
 set record = ""
 
@@ -9,12 +9,16 @@ set realname = "Vladimir Oltean"
 set use_from = yes
 
 set imap_user = "vladimir.oltean@nxp.com"
-set smtp_url="smtp://$imap_user@localhost:1025"
+# set smtp_url="smtp://$imap_user@localhost:1025"
+set smtp_url="smtp://$imap_user@smtp.office365.com:587/"
+set smtp_authenticators="xoauth2"
+set smtp_oauth_refresh_command="/opt/oauth2/get_access_token.sh"
 # secret-tool store --label=imap user <USERNAME> domain <DOMAIN>
-source 'echo "$( pw=$( secret-tool lookup user tigrisor domain nxp.com ); echo set imap_pass=\"$pw\"; echo set smtp_pass=\"$pw\" )" |'
+# source 'echo "$( pw=$( secret-tool lookup user tigrisor domain nxp.com ); echo set imap_pass=\"$pw\"; echo set smtp_pass=\"$pw\" )" |'
 
-set ssl_force_tls = no
-set ssl_starttls = no
+# set ssl_force_tls = no
+# set ssl_starttls = no
+set ssl_force_tls = yes
 
 set display_filter="unsanitize-safelinks"
 set editor ="ls -la %s && unsanitize-safelinks -i %s && vim %s"
@@ -24,8 +28,8 @@ unmailboxes *
 named-mailboxes "Inbox" "=inbox"
 named-mailboxes "Seen" "=inbox/Seen"
 named-mailboxes "Sent" "=Sent"
+named-mailboxes "Sent Items" "=Sent Items"
+named-mailboxes "Review" "=inbox/Review"
 named-mailboxes "Drafts" "=Drafts"
 named-mailboxes "Trash" "=Trash"
 named-mailboxes "Unsent Messages" "=Unsent Messages"
-named-mailboxes "ldup-devel" "=inbox/Mailing lists/ldup-devel"
-named-mailboxes "linux-devel" "=inbox/Mailing lists/linux-devel"

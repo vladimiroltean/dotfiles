@@ -31,7 +31,7 @@ Plug 'tpope/vim-unimpaired'
 Plug 'https://github.com/vim-scripts/Colour-Sampler-Pack'
 Plug 'https://github.com/ntpeters/vim-better-whitespace'
 Plug 'scrooloose/nerdtree'
-Plug 'gu-fan/riv.vim'
+" Plug 'gu-fan/riv.vim'
 " Handy mappings for <Leader>ci etc
 Plug 'scrooloose/nerdcommenter'
 " Handy search with <C>-f

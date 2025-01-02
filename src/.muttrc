@@ -3,6 +3,7 @@ set edit_headers = yes
 
 # macro index G "!mbsync -a^M" "Update through mbsync"
 set move = no
+#set sort = reverse-date-received
 set sort = threads
 # set sort_aux = reverse-date #-received
 set sort_browser=date
@@ -124,9 +125,13 @@ source ~/.mutt/gmail
 
 folder-hook 'gmail' 'source ~/.mutt/gmail'
 folder-hook 'work' 'source ~/.mutt/work'
+folder-hook 'work-oss' 'source ~/.mutt/work-oss'
 
-reply-hook https://eur01.safelinks.protection.outlook.com '<enter-command>echo %s'
+# https://people.kernel.org/monsieuricon/fix-your-mutt
+# set message_id_format = "<%Y%02m%02d%02H%02M%02S.G%c%p@%f>"
+send-hook . "source ~/.mutt-hook-fix-msgid"
 
 # Macros for switching accounts
 macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/gmail<enter><change-folder>!<enter>'
 macro index <f3> '<sync-mailbox><enter-command>source ~/.mutt/work<enter><change-folder>!<enter>'
+macro index <f4> '<sync-mailbox><enter-command>source ~/.mutt/work-oss<enter><change-folder>!<enter>'
