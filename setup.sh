@@ -55,6 +55,7 @@ install() {
 
 	echo "====== The way is cleared, copy all new files"
 	for dotfile in $(find . -type f); do
+		mkdir -p $(dirname "${HOME}/${dotfile}")
 		ln -sf "$(realpath ${dotfile})" "${HOME}/${dotfile}"
 	done
 
