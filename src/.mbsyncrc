@@ -153,31 +153,3 @@ SyncState *
 
 Group work
 Channel work-inbox
-
-#################################################
-
-IMAPAccount work-test-msal
-Host outlook.office365.com
-AuthMechs XOAUTH2
-User New365User.00007@newco365.nl
-PassCmd "/opt/oauth2/get_access_token.sh"
-SSLType IMAPS
-SSLVersions TLSv1.1 TLSv1.2
-
-IMAPStore work-test-msal-remote
-Account work-test-msal
-
-MaildirStore work-test-msal-local
-Subfolders Verbatim
-Path ~/mailbox/work-test-msal/
-Inbox ~/mailbox/work-test-msal/inbox
-
-Channel work-test-msal-inbox
-Far :work-test-msal-remote:
-Near :work-test-msal-local:
-Patterns * !Archives
-Sync All
-SyncState *
-
-Group work-test-msal
-Channel work-test-msal-inbox
