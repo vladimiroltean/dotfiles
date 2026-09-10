@@ -13,12 +13,14 @@
 #	email = olteanv@gmail.com
 [sendemail]
 	confirm = always
-	smtpencryption = tls
+	sendmailCmd = /usr/bin/msmtp -a nxp --set-from-header=on
+	envelopeSender = auto
+#	smtpencryption = tls
 #	smtpserver = smtp.gmail.com
 #	smtpuser = olteanv@gmail.com
-	smtpserver = outlook.office365.com
-	smtpuser = vladimir.oltean@nxp.com
-	smtpserverport = 587
+#	smtpserver = outlook.office365.com
+#	smtpuser = vladimir.oltean@nxp.com
+#	smtpserverport = 587
 	chainreplyto = false
 #	signedoffbycc = false
 #	suppresscc = all

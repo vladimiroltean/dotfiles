@@ -13,9 +13,9 @@ SyncState *
 IMAPAccount gmail
 Host imap.gmail.com
 User olteanv@gmail.com
-PassCmd "secret-tool lookup user tigrisor domain gmail.com"
+PassCmd "/opt/gmail-oauth2-script/get_access_token.sh"
 SSLType IMAPS
-AuthMechs LOGIN
+AuthMechs XOAUTH2
 PipelineDepth 30
 
 IMAPStore gmail-remote
@@ -98,6 +98,10 @@ Channel gmail-linuxptp
 Far :gmail-remote:"linuxptp"
 Near :gmail-local:linuxptp
 
+Channel gmail-facturi
+Far :gmail-remote:"Facturi"
+Near :gmail-local:facturi
+
 Group gmail
 Channel gmail-inbox
 Channel gmail-seen
@@ -115,6 +119,7 @@ Channel gmail-buildroot
 Channel gmail-devicetree
 Channel gmail-debian
 Channel gmail-linuxptp
+Channel gmail-facturi
 
 
 #################################################
