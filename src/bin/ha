@@ -1,0 +1,62 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+usage() {
+	echo "$0 usage options:"
+	echo "--domain <domain>: The domain of the service (e.g., light)."
+	echo "--service <service>: The service you want to call (e.g., turn_on)."
+	echo "--entity <entity_id>"
+	exit
+}
+
+argc=$#
+argv=( "$@" )
+domain=
+service=
+entity=
+
+if [ $argc = 0 ]; then
+	usage
+fi
+
+i=0
+while [ $i -lt $argc ]; do
+	key="${argv[$i]}"
+	i=$((i + 1))
+	case "$key" in
+	-d|--domain)
+		domain="${argv[$i]}"
+		i=$((i + 1))
+		;;
+	-s|--service)
+		service="${argv[$i]}"
+		i=$((i + 1))
+		;;
+	-e|--entity)
+		entity="${argv[$i]}"
+		i=$((i + 1))
+		;;
+	-h|--help)
+		usage
+		;;
+	*)
+		echo "Unrecognized option $key"
+		exit
+		;;
+	esac
+done
+
+if [ -z "$domain" ]; then echo "Please specify --domain"; exit; fi
+if [ -z "$service" ]; then echo "Please specify --service"; exit; fi
+if [ -z "$entity" ]; then echo "Please specify --entity"; exit; fi
+
+config="$HOME/.local/share/ha.json"
+token=$(jq -r '.token' "$config")
+url=$(jq -r '.url' "$config")
+
+curl -X POST \
+	-H "Authorization: Bearer $token" \
+	-H "Content-Type: application/json" \
+	-d "{\"entity_id\": \"$entity\"}" \
+	$url/api/services/$domain/$service

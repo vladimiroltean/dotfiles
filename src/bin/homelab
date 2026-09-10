@@ -1,0 +1,85 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+usage() {
+	echo "$0 usage options:"
+	echo "$0 reset|power-on|power-off|power-toggle <board>"
+	exit
+}
+
+argc=$#
+argv=( "$@" )
+board=
+
+if [ $argc -lt 2 ]; then
+	usage
+fi
+
+board="${argv[1]}"
+case $board in
+alpi)
+	entity="smart_socket_1_outlet_1"
+	;;
+sara)
+	entity="smart_socket_1_outlet_2"
+	;;
+gigi)
+	entity="smart_socket_1_outlet_3"
+	;;
+mox)
+	entity="smart_socket_1_outlet_4"
+	;;
+raspberrypi3)
+	entity="smart_socket_1_usb_switch"
+	;;
+black)
+	entity="smart_socket_2_outlet_1"
+	;;
+archer-c5)
+	entity="smart_socket_2_outlet_2"
+	;;
+clearfog)
+	entity="smart_socket_2_outlet_3"
+	;;
+fii)
+	entity="smart_socket_2_outlet_4"
+	;;
+printer)
+	entity="smart_socket_3_outlet_1"
+	;;
+m51)
+	entity="smart_socket_3_outlet_2"
+	;;
+sja1110-mgs)
+	entity="smart_socket_3_outlet_3"
+	;;
+bluebox3)
+	entity="smart_socket_3_outlet_4"
+	;;
+*)
+	echo "Unknown board $board"
+	exit
+	;;
+esac
+
+verb="${argv[0]}"
+case $verb in
+power-on)
+	ha --domain switch --entity switch.$entity --service turn_on
+	;;
+power-off)
+	ha --domain switch --entity switch.$entity --service turn_off
+	;;
+power-toggle)
+	ha --domain switch --entity switch.$entity --service toggle
+	;;
+reset)
+	ha --domain switch --entity switch.$entity --service turn_off
+	sleep 3
+	ha --domain switch --entity switch.$entity --service turn_on
+	;;
+*)
+	echo "Unknown verb $verb"
+	exit
+esac

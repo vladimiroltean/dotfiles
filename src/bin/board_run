@@ -1,0 +1,450 @@
+#!/usr/bin/env python3
+import sys
+import os
+import time
+import argparse
+import subprocess
+import configparser
+import shlex
+import re
+import uuid
+
+class RemoteBoardController:
+    def __init__(self, host, board, username="root", password="root", timeout=60,
+                 verbose=False, reset_cmd=None):
+        self.host = host
+        self.board = board
+        self.username = username
+        self.password = password
+        self.timeout = timeout
+        self.verbose = verbose
+        self.reset_cmd = reset_cmd
+        self.ssh_base = ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes", self.host]
+
+    def _log(self, msg):
+        if self.verbose:
+            print(f"[*] {msg}", file=sys.stderr)
+
+    def run_ssh_cmd(self, cmd_str):
+        """Runs a command on the remote station via SSH and returns its output."""
+        full_cmd = self.ssh_base + [cmd_str]
+        result = subprocess.run(full_cmd, capture_output=True, text=True)
+        return result.returncode, result.stdout, result.stderr
+
+    def ensure_session(self):
+        """Ensures the tmux session for the board exists."""
+        self._log(f"Checking if tmux session '{self.board}' exists...")
+        ret, stdout, _ = self.run_ssh_cmd(f"tmux list-sessions -F '#S'")
+        sessions = stdout.strip().split("\n") if ret == 0 else []
+
+        if self.board in sessions:
+            self._log(f"Tmux session '{self.board}' is already running.")
+            return True
+
+        self._log(f"Session '{self.board}' not found. Starting tmux-session-boards...")
+        ret, _, stderr = self.run_ssh_cmd("/home/pi/bin/tmux-session-boards")
+
+        # Double check
+        ret, stdout, _ = self.run_ssh_cmd(f"tmux list-sessions -F '#S'")
+        sessions = stdout.strip().split("\n") if ret == 0 else []
+        if self.board in sessions:
+            self._log(f"Tmux session '{self.board}' started successfully.")
+            return True
+
+        print(f"[-] Error: Failed to start session '{self.board}'. Error: {stderr}", file=sys.stderr)
+        return False
+
+    def capture_pane(self, lines=None):
+        """Captures the current pane including history.
+
+        If lines is None, captures from the absolute beginning of the scrollback
+        history buffer up to the current visible screen.
+        """
+        if lines is None:
+            cmd = f"tmux capture-pane -S - -p -t {self.board}"
+        else:
+            cmd = f"tmux capture-pane -S -{lines} -p -t {self.board}"
+
+        ret, stdout, stderr = self.run_ssh_cmd(cmd)
+        if ret != 0:
+            self._log(f"capture-pane failed: {stderr}")
+            return ""
+        return stdout
+
+    def send_keys(self, keys, enter=True):
+        """Sends keys to the tmux session."""
+        suffix = " Enter" if enter else ""
+        # Escape single quotes for bash safety inside ssh
+        escaped_keys = keys.replace("'", "'\\''")
+        cmd = f"tmux send-keys -t {self.board} '{escaped_keys}'{suffix}"
+        ret, _, stderr = self.run_ssh_cmd(cmd)
+        if ret != 0:
+            self._log(f"send_keys failed: {stderr}")
+
+    def get_current_state(self, buffer):
+        """Analyze only the bottom of the screen buffer to get the active state."""
+        lines = [line.strip() for line in buffer.splitlines() if line.strip()]
+        last_lines = lines[-4:] if len(lines) >= 4 else lines
+
+        self._log(f"Active bottom of screen: {last_lines}")
+
+        for line in reversed(last_lines):
+            if "login:" in line:
+                return "LOGIN"
+            if "Password:" in line:
+                return "PASSWORD"
+        return "SHELL"
+
+    def handle_login(self, buffer):
+        """Checks if login is prompted and logs in."""
+        state = self.get_current_state(buffer)
+        if state == "LOGIN":
+            self._log("Detected active login prompt, sending username...")
+            self.send_keys(self.username)
+            time.sleep(1.5)
+            return True
+        elif state == "PASSWORD":
+            self._log("Detected active password prompt, sending password...")
+            self.send_keys(self.password)
+            time.sleep(2)
+            return True
+        return False
+
+    def reset_board(self):
+        """Power-cycle the board using the configured reset_cmd.
+
+        reset_cmd is a template with {host} and {board} placeholders and is run
+        on this machine (wrap it in ssh to reach a reset tool on the console
+        server).  Returns the command's exit status; a non-zero status is
+        warned about but not treated as fatal, since the board may still boot.
+        """
+        cmd = (self.reset_cmd
+               .replace("{host}", shlex.quote(self.host))
+               .replace("{board}", shlex.quote(self.board)))
+        self._log(f"Resetting board: {cmd}")
+        r = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
+        if r.returncode != 0:
+            print(f"[-] Warning: reset returned {r.returncode}: {r.stderr.strip()}",
+                  file=sys.stderr)
+        return r.returncode
+
+    def boot_log(self):
+        """Reset the board and capture the boot log for the current boot only.
+
+        The fundamental challenge is isolating exactly one boot's output from
+        the tmux scrollback, which accumulates output from all previous boots.
+
+        Approach: pre-reset anchor
+        --------------------------
+        Before issuing the reset we snapshot the last ANCHOR_LINES non-empty
+        lines of the console as an "anchor".  After the capture window we scan
+        the post-reset buffer for that anchor and return only what follows it.
+
+        Why not tmux clear-history?
+            The reset command is issued over SSH and the board starts printing
+            immediately.  The first bytes of the new boot can arrive and be
+            appended to the scrollback before clear-history executes on the
+            remote, so the histories can interleave.  The anchor approach has
+            no such race.
+
+        Why not inject a unique marker before the reset?
+            The board may be unresponsive (hung, crashed).  Any marker we send
+            may never be echoed onto the console, making it useless.
+
+        Why the anchor works in practice:
+            When the board is idle at the U-Boot prompt the last lines of the
+            console are deterministic and end with "=> ".  After the reset the
+            new boot appends its output immediately after that same prompt,
+            without inserting a blank line.  The anchor therefore sits exactly
+            at the boundary between old and new output.
+
+        Anchor search algorithm:
+            The anchor string (ending with "=> ") repeats at the end of every
+            boot cycle, including the current idle state after the new boot
+            completes.  We therefore cannot use rfind() -- it would land on
+            the trailing idle prompt with nothing after it.  Instead we scan
+            all occurrences forward and keep the last one that is followed by
+            non-whitespace content (i.e. actual boot output).
+
+        Known limitation:
+            If the board is mid-print (not at the prompt) when we snapshot,
+            the anchor will not end with "=> " and may not repeat verbatim
+            after the new boot.  In that case the anchor search fails and we
+            fall back to returning the full buffer with a warning.
+        """
+        ANCHOR_LINES = 5
+
+        if not self.reset_cmd:
+            return 1, (f"{self.board}: no reset_cmd configured; "
+                       f"board is not remotely resettable")
+
+        if not self.ensure_session():
+            return 1, "Failed to initialize or find board session"
+
+        # Snapshot the tail of the current console output to use as an anchor.
+        self._log("Snapshotting pre-reset console tail for anchor...")
+        pre_reset = self.capture_pane(lines=None)
+        anchor_lines = [l for l in pre_reset.splitlines() if l.strip()][-ANCHOR_LINES:]
+        anchor = "\n".join(anchor_lines)
+        self._log(f"Anchor ({len(anchor_lines)} lines):\n{anchor}")
+
+        # Trigger the reset via the configured reset_cmd.
+        self.reset_board()
+
+        # Wait for the boot to complete, then capture the full scrollback.
+        self._log(f"Capturing boot log for {self.timeout} seconds...")
+        time.sleep(self.timeout)
+        post_reset = self.capture_pane(lines=None)
+
+        # Locate the boot boundary using the anchor.  See docstring for why we
+        # scan forward rather than using rfind().
+        if anchor:
+            best_idx = -1
+            start = 0
+            while True:
+                idx = post_reset.find(anchor, start)
+                if idx == -1:
+                    break
+                # Only consider occurrences that have actual output after them.
+                # The final idle "=> " prompt also matches the anchor but has
+                # nothing after it and must be skipped.
+                if post_reset[idx + len(anchor):].strip():
+                    best_idx = idx
+                start = idx + 1
+            if best_idx != -1:
+                log = post_reset[best_idx + len(anchor):].strip()
+                return 0, log
+
+        print("[-] Warning: pre-reset anchor not found in capture buffer; "
+              "returning full buffer", file=sys.stderr)
+        return 0, post_reset
+
+    @staticmethod
+    def _extract_between_markers(buffer, start_marker, end_marker):
+        """Extract the command output from between the start and end marker lines.
+
+        The tmux buffer contains both the echoed command line that was sent to
+        the board and the board's response.  For example:
+
+            => echo ---START--- ; ls ; echo ---END---_STATUS_CODE=$?
+            ---START---
+            file1  file2
+            ---END---_STATUS_CODE=0
+
+        The marker strings therefore appear twice in the buffer: once inside
+        the command echo line (mid-line, surrounded by other text) and once as
+        standalone output lines.  A naive substring or regex search would match
+        the first (wrong) occurrence.
+
+        We use a line-by-line scan instead:
+          - start: find the last line whose stripped content equals start_marker
+            exactly.  "Last" because the command echo line comes before the
+            output line; taking the last exact match always lands on the output.
+          - end: find the first line after start that begins with end_marker
+            (it continues with "_STATUS_CODE=N" but we match by prefix).
+
+        The end marker is matched by startswith() rather than equality because
+        the status code is appended directly: ---END---_STATUS_CODE=0.
+
+        On timeout (partial capture) the end marker may not be present yet.
+        In that case we return everything from the start marker to the end of
+        the buffer, so the caller gets whatever output was produced so far.
+        """
+        lines = buffer.splitlines()
+
+        # Find the last line that is exactly the start marker.  This skips the
+        # "echo <marker>" command line which has additional text after the marker.
+        start_idx = None
+        for i, line in enumerate(lines):
+            if line.strip() == start_marker:
+                start_idx = i  # keep updating: last exact match wins
+
+        if start_idx is None:
+            return ""
+
+        for i in range(start_idx + 1, len(lines)):
+            if lines[i].strip().startswith(end_marker):
+                return "\n".join(lines[start_idx + 1:i]).strip()
+
+        # End marker not yet seen: partial capture during timeout, return what
+        # we have so far.
+        return "\n".join(lines[start_idx + 1:]).strip()
+
+    def run_command(self, command):
+        """Run a command on the board serial console and return (status, output).
+
+        The command is wrapped in unique echo markers so we can reliably extract
+        its output from the tmux scrollback:
+
+            echo ---START_<id>--- ; <command> ; echo ---END_<id>---_STATUS_CODE=$?
+
+        Marker design:
+          - A UUID suffix makes the markers unique per invocation, preventing
+            false matches against output from a previous run still in the
+            scrollback.
+          - echo is used instead of printf because U-Boot's hush shell always
+            has echo as a built-in, whereas printf is optional and gated on
+            CONFIG_HUSH_PRINTF (not enabled on all boards).
+          - The status code is embedded in the end marker line itself
+            (---END---_STATUS_CODE=$?) so a single echo captures both the
+            boundary and the exit status atomically.  Using a separate
+            "echo $?" after the end marker would give the exit status of the
+            end-marker echo, not the user command.
+          - Semicolons separate the three parts so the end marker and status
+            code are always printed regardless of whether the command succeeds
+            or fails.  Using && before the start marker would suppress the
+            user command if the start echo somehow failed.
+
+        Output extraction (see _extract_between_markers for full details):
+            The buffer contains the command line we sent, which includes the
+            marker strings verbatim, followed by the board's output lines.
+            We identify the marker occurrences that are standalone output lines
+            (not the sent command line) using exact line matching.
+
+        Poll loop:
+            We poll every 1.5 seconds rather than sleeping for the full timeout
+            upfront.  This allows us to return as soon as the command finishes.
+            The tradeoff is one extra SSH round-trip per 1.5 seconds.
+        """
+        if not self.ensure_session():
+            return 1, "Failed to initialize or find board session"
+
+        # Unique random ID to prevent matching previous scrollback history
+        run_id = uuid.uuid4().hex[:8]
+        start_marker = f"---BOARD_CMD_START_{run_id}---"
+        end_marker = f"---BOARD_CMD_END_{run_id}---"
+
+        # Clear/wake terminal first
+        self._log("Waking up terminal...")
+        self.send_keys("", enter=True)
+        time.sleep(1)
+
+        # Scan bottom of screen for login prompts
+        buffer_init = self.capture_pane(lines=30)
+        if self.handle_login(buffer_init):
+            # Capture again to see if we logged in
+            buffer_init = self.capture_pane(lines=30)
+            self.handle_login(buffer_init)
+            buffer_init = self.capture_pane(lines=30)
+
+        # Send command wrapped in echo markers.
+        # Use echo instead of printf: U-Boot's hush shell has echo built in but
+        # printf is an optional command gated on CONFIG_HUSH_PRINTF.
+        wrapped_command = (
+            f"echo ---BOARD_CMD_START_{run_id}--- ; "
+            f"{command} ; "
+            f"echo ---BOARD_CMD_END_{run_id}---_STATUS_CODE=$?"
+        )
+        self._log(f"Sending command with ID {run_id}: {command}")
+        self.send_keys(wrapped_command)
+
+        start_time = time.time()
+        output_captured = ""
+        status_code = -1
+        command_finished = False
+
+        self._log("Waiting for command execution...")
+        while time.time() - start_time < self.timeout:
+            time.sleep(1.5)
+            # Capture the entire history buffer (-) to ensure we don't truncate start_marker
+            buffer = self.capture_pane(lines=None)
+
+            # Check active bottom state (only last few lines)
+            state = self.get_current_state(buffer)
+            if state in ["LOGIN", "PASSWORD"]:
+                self.handle_login(buffer)
+                continue
+
+            # Look for markers
+            if start_marker in buffer and end_marker in buffer:
+                # Status code is embedded in the end marker line: ---END---_STATUS_CODE=N
+                match = re.search(rf"{re.escape(end_marker)}_STATUS_CODE=(\d+)", buffer)
+                if match:
+                    status_code = int(match.group(1))
+                    command_finished = True
+                    output_captured = self._extract_between_markers(
+                        buffer, start_marker, end_marker)
+                    break
+
+        if not command_finished:
+            print(f"[-] Error: Command timed out after {self.timeout} seconds.", file=sys.stderr)
+            buffer = self.capture_pane(lines=None)
+            output_captured = self._extract_between_markers(buffer, start_marker, end_marker)
+            return 124, output_captured or ""
+
+        return status_code, output_captured
+
+DEFAULT_CONFIG = "~/.config/board_run.ini"
+
+def load_board_cfg(board, path):
+    """Return (host, reset_cmd) for a board from the ini file, or (None, None).
+
+    Each board is its own self-contained section (no [DEFAULT]) so boards
+    living on different console servers can coexist in one file.
+    """
+    cp = configparser.ConfigParser()
+    cp.read(os.path.expanduser(path))
+    if not cp.has_section(board):
+        return None, None
+    return cp[board].get("host"), cp[board].get("reset_cmd")
+
+def main():
+    parser = argparse.ArgumentParser(description="Run commands on remote board via SSH/Tmux/Screen")
+    parser.add_argument("-H", "--host", default=None,
+                        help="SSH remote host (overrides the board's config entry)")
+    parser.add_argument("-b", "--board", default="gigi", help="Board session name")
+    parser.add_argument("-u", "--username", default="root", help="Board login username")
+    parser.add_argument("-p", "--password", default="root", help="Board login password")
+    parser.add_argument("-t", "--timeout", type=int, default=60, help="Command timeout in seconds")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose logging")
+    parser.add_argument("--config", default=os.environ.get("BOARD_RUN_CONFIG", DEFAULT_CONFIG),
+                        help=f"Per-board ini file (default {DEFAULT_CONFIG})")
+    parser.add_argument("--reset-cmd", default=None,
+                        help="Override the board's reset command "
+                             "({host} and {board} placeholders)")
+    parser.add_argument("--boot-log", action="store_true",
+                        help="Reset the board and capture the raw boot log for --timeout seconds")
+    parser.add_argument("command", nargs="?", help="The shell command to run on the board")
+
+    args = parser.parse_args()
+
+    if not args.boot_log and not args.command:
+        parser.error("command is required unless --boot-log is specified")
+
+    cfg_host, cfg_reset = load_board_cfg(args.board, args.config)
+    host = args.host or cfg_host
+    reset_cmd = args.reset_cmd or os.environ.get("BOARD_RUN_RESET_CMD") or cfg_reset
+    if not host:
+        parser.error(f"no host for board '{args.board}': pass -H or add it to "
+                     f"{args.config}")
+
+    controller = RemoteBoardController(
+        host=host,
+        board=args.board,
+        username=args.username,
+        password=args.password,
+        timeout=args.timeout,
+        verbose=args.verbose,
+        reset_cmd=reset_cmd
+    )
+
+    if args.boot_log:
+        status, output = controller.boot_log()
+        print(output)
+        sys.exit(status)
+
+    status, output = controller.run_command(args.command)
+
+    # Strip terminal status lines/decorations if any
+    clean_lines = []
+    for line in output.splitlines():
+        if "[ raspberrypi3 ]" in line or "(0*platform" in line:
+            continue
+        clean_lines.append(line)
+
+    clean_output = "\n".join(clean_lines).strip()
+    print(clean_output)
+    sys.exit(status)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+declare -A ttys
+ttys["mox"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.5.5:1.0-port0"
+ttys["gigi"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.5.6:1.0-port0"
+ttys["sara"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.5.7:1.0-port0"
+ttys["alpi"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.5.3:1.1" # was platform-3f980000.usb-usb-0:1.5.4.4:1.1"
+ttys["fii"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.3:1.0-port0" # was /dev/serial/by-path/platform-3f980000.usb-usb-0:1.5.1.2:1.0-port0
+ttys["clearfog lx2"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.5.4:1.0-port0"
+ttys["jonsbo"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.3:1.0-port0"
+ttys["black"]="/dev/serial/by-id/usb-MBED_MBED_CMSIS-DAP_200102037EE9B3BB83156C42-if01"
+ttys["bluebox3"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.2:1.0-port0" # was platform-3f980000.usb-usb-0:1.5.1.3:1.0-port0"
+ttys["m51_s0_p0"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.1:1.0-port0"
+#ttys["m51_s0_p1"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.2:1.0-port0"
+#ttys["m51_s1_p0"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.2:1.1-port0"
+#ttys["m51_s1_p1"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.1:1.3-port0"
+ttys["mgs_p0"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.3:1.0-port0"
+#ttys["mgs_p1"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.3:1.1-port0"
+#ttys["mgs_p2"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.3:1.2-port0"
+#ttys["mgs_p3"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.3:1.3-port0"
+ttys["archer-c5"]="/dev/serial/by-path/platform-3f980000.usb-usb-0:1.4.1.4:1.0-port0"
+
+for board in "${!ttys[@]}"; do
+	tmux new-session -s "${board}" -d \; send-keys "screen ${ttys[${board}]} 115200" C-m
+done
+tmux attach-session -d
