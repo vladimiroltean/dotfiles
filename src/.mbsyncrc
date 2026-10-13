@@ -39,7 +39,7 @@ Far :gmail-remote:"[Gmail]/Drafts"
 Near :gmail-local:drafts
 
 Channel gmail-trash
-Far :gmail-remote:"Trash"
+Far :gmail-remote:"[Gmail]/Trash"
 Near :gmail-local:trash
 
 Channel gmail-sent
