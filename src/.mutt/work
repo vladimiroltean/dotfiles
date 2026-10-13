@@ -1,7 +1,7 @@
 set folder = "~/mailbox/work"
 set spoolfile = "~/mailbox/work/inbox"
 set postponed = "~/mailbox/work/Drafts"
-set trash = "+/Trash"
+set trash = "+Deleted Items"
 set record = ""
 
 set from = "vladimir.oltean@nxp.com"
