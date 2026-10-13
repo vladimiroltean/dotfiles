@@ -115,6 +115,7 @@ Channel gmail-rcu
 Channel gmail-lkml
 Channel gmail-linux-rt-users
 Channel gmail-linux-arm-msm
+Channel gmail-linux-phy
 Channel gmail-buildroot
 Channel gmail-devicetree
 Channel gmail-debian
