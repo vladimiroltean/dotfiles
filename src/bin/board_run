@@ -392,7 +392,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run commands on remote board via SSH/Tmux/Screen")
     parser.add_argument("-H", "--host", default=None,
                         help="SSH remote host (overrides the board's config entry)")
-    parser.add_argument("-b", "--board", default="gigi", help="Board session name")
+    parser.add_argument("-b", "--board", required=True, help="Board session name")
     parser.add_argument("-u", "--username", default="root", help="Board login username")
     parser.add_argument("-p", "--password", default="root", help="Board login password")
     parser.add_argument("-t", "--timeout", type=int, default=60, help="Command timeout in seconds")
