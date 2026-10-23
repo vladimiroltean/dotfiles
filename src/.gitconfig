@@ -13,7 +13,7 @@
 #	email = olteanv@gmail.com
 [sendemail]
 	confirm = always
-	sendmailCmd = /usr/bin/msmtp -a nxp --set-from-header=on
+	sendmailCmd = /usr/bin/msmtp -a nxp
 	envelopeSender = auto
 #	smtpencryption = tls
 #	smtpserver = smtp.gmail.com
