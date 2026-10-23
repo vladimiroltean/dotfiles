@@ -52,8 +52,6 @@ Plug 'majutsushi/tagbar' ", { 'on': 'TagbarToggle' }
 " Syntax-aware % matching
 Plug 'tmhedberg/matchit'
 Plug 'drn/zoomwin-vim', { 'on': 'ZoomWin' }
-" For vimpager compatibility with git colors
-Plug 'https://github.com/vim-scripts/AnsiEsc.vim'
 " For marks
 Plug 'kshenoy/vim-signature'
 " At match %d out of %d matched

@@ -51,7 +51,7 @@ fi
 shopt -s autocd
 
 export PROMPT_DIRTRIM=3
-export PAGER='vimpager'
+export PAGER='less'
 
 if [ -d ~/bin ]; then
 	export PATH=$HOME/bin:$PATH
