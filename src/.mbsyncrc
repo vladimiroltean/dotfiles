@@ -145,7 +145,7 @@ Inbox ~/mailbox/work/inbox
 Channel work-inbox
 Far :work-remote:
 Near :work-local:
-Patterns * !Archives
+Patterns * !Archive !"Sync Issues*" !Calendar* !Contacts* !"Conversation History" !Journal !Notes !Outbox !Tasks !"Quick Step Settings" !RSS* !Junk !Sent !Trash !"Unsent Messages" !"Social Activity Notifications"
 Sync All
 SyncState *
 
