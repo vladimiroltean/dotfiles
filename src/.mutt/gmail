@@ -41,6 +41,7 @@ mailboxes "=linux-arm-msm"
 mailboxes "=debian"
 mailboxes "=linuxptp"
 mailboxes "=facturi"
+mailboxes "~/mailbox/lei/netdev-me"
 
 set virtual_spoolfile=yes
 # virtual-mailboxes "notmuch-netdev" "notmuch://?query=tag:inbox"
