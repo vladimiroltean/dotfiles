@@ -11,7 +11,7 @@
 # configured here named ".notmuch".
 #
 [database]
-path=/storage/mailbox/vladi/gmail
+path=/home/vladimir/mailbox
 
 # User configuration
 #
@@ -30,7 +30,7 @@ path=/storage/mailbox/vladi/gmail
 #
 [user]
 name=Vladimir Oltean
-primary_email=olteanv@gmail.com
+primary_email=vladimir.oltean@nxp.com
 
 # Configuration for "notmuch new"
 #
