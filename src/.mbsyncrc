@@ -124,14 +124,6 @@ Channel gmail-facturi
 
 #################################################
 
-# IMAPAccount work
-# Host localhost
-# Port 1143
-# AuthMechs LOGIN
-# User vladimir.oltean@nxp.com
-# PassCmd "secret-tool lookup user tigrisor domain nxp.com"
-# SSLType None
-# Timeout 0
 IMAPAccount work
 Host outlook.office365.com
 AuthMechs XOAUTH2
