@@ -48,7 +48,7 @@ fii)
 printer)
 	entity="smart_socket_3_outlet_1"
 	;;
-m51)
+imx952-evk)
 	entity="smart_socket_3_outlet_2"
 	;;
 sja1110-mgs)
