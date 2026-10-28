@@ -36,3 +36,12 @@ named-mailboxes "LnxRevLi" "=inbox/Mailing lists/LnxRevLi"
 named-mailboxes "nipa-drm" "=inbox/nipa/drm-next"
 named-mailboxes "nipa-linux-next" "=inbox/nipa/linux-next"
 named-mailboxes "nipa-net-next" "=inbox/nipa/net-next"
+
+# S      = message (or tagged set) -> Seen
+# Alt-s  = whole thread (e.g. a patch series + replies) -> Seen
+# Alt-S  = everything read and not flagged -> Seen  ("I've skimmed it, clear the rest")
+# $      = write changes, then push to server / pull new mail
+macro index,pager S   "<save-message>=inbox/Seen<enter>" "move to Seen"
+macro index       \es "<untag-pattern>~A<enter><tag-thread><tag-prefix><save-message>=inbox/Seen<enter>" "thread to Seen"
+macro index       \eS "<tag-pattern>~R !~F<enter><tag-prefix><save-message>=inbox/Seen<enter>" "read+unflagged to Seen"
+macro index       $   "<sync-mailbox><shell-escape>mbsync -qq 'work-inbox:INBOX,INBOX/Seen,Deleted Items'<enter>" "sync + mbsync"

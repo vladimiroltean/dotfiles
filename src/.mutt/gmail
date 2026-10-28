@@ -44,3 +44,12 @@ mailboxes "=facturi"
 
 set virtual_spoolfile=yes
 # virtual-mailboxes "notmuch-netdev" "notmuch://?query=tag:inbox"
+
+# S      = message (or tagged set) -> Seen
+# Alt-s  = whole thread (e.g. a patch series + replies) -> Seen
+# Alt-S  = everything read and not flagged -> Seen  ("I've skimmed it, clear the rest")
+# $      = write changes, then push to server / pull new mail
+macro index,pager S   "<save-message>=seen<enter>" "move to Seen"
+macro index       \es "<untag-pattern>~A<enter><tag-thread><tag-prefix><save-message>=seen<enter>" "thread to Seen"
+macro index       \eS "<tag-pattern>~R !~F<enter><tag-prefix><save-message>=seen<enter>" "read+unflagged to Seen"
+macro index       $   "<sync-mailbox><shell-escape>mbsync -q gmail-inbox gmail-seen gmail-trash<enter>" "sync + mbsync"
