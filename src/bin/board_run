@@ -358,7 +358,7 @@ class RemoteBoardController:
             # Look for markers
             if start_marker in buffer and end_marker in buffer:
                 # Status code is embedded in the end marker line: ---END---_STATUS_CODE=N
-                match = re.search(rf"{re.escape(end_marker)}_STATUS_CODE=(\d+)", buffer)
+                match = re.search(rf"{re.escape(end_marker)}_STATUS_CODE=(-?\d+)", buffer)
                 if match:
                     status_code = int(match.group(1))
                     command_finished = True
