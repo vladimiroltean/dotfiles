@@ -10,8 +10,10 @@ import re
 import uuid
 
 class RemoteBoardController:
+    EXIT_UNSYNCED = 125  # could not get the console to an idle shell prompt
+
     def __init__(self, host, board, username="root", password="root", timeout=60,
-                 verbose=False, reset_cmd=None):
+                 verbose=False, reset_cmd=None, interrupt=True):
         self.host = host
         self.board = board
         self.username = username
@@ -19,7 +21,14 @@ class RemoteBoardController:
         self.timeout = timeout
         self.verbose = verbose
         self.reset_cmd = reset_cmd
-        self.ssh_base = ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes", self.host]
+        self.interrupt = interrupt
+        # Every tmux interaction is a separate ssh call, so share one
+        # connection across them (and across back-to-back invocations).
+        self.ssh_base = ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes",
+                         "-o", "ControlMaster=auto",
+                         "-o", "ControlPath=~/.ssh/board_run-%C",
+                         "-o", "ControlPersist=60",
+                         self.host]
 
     def _log(self, msg):
         if self.verbose:
@@ -80,6 +89,71 @@ class RemoteBoardController:
         ret, _, stderr = self.run_ssh_cmd(cmd)
         if ret != 0:
             self._log(f"send_keys failed: {stderr}")
+
+    def send_key(self, key):
+        """Sends a single tmux key name (e.g. C-c) to the tmux session."""
+        ret, _, stderr = self.run_ssh_cmd(f"tmux send-keys -t {self.board} {key}")
+        if ret != 0:
+            self._log(f"send_key {key} failed: {stderr}")
+
+    @staticmethod
+    def _has_exact_line(buffer, marker):
+        """True if some line of buffer is exactly marker (ignoring whitespace).
+
+        The echoed command line ("echo <marker>") does not match, so a hit
+        means the shell actually executed the echo.
+        """
+        return any(line.strip() == marker for line in buffer.splitlines())
+
+    # Escalation steps for regaining the shell, one per sync attempt.
+    # C-z + kill only helps where job control is enabled; elsewhere it is
+    # a harmless no-op ("unknown command" in U-Boot).
+    INTERRUPT_STEPS = [["C-c"], ["C-\\\\"], ["C-z", "kill -9 %%"]]
+
+    def sync_console(self, sync_timeout=3.0):
+        """Bring the console to an idle shell prompt and prove it.
+
+        Unless interrupts are disabled, first interrupts whatever is in the
+        foreground (a command left over from a previous timed-out run, a
+        half-typed line, a running U-Boot command).  Then sends
+        "echo ---BOARD_SYNC_<id>---" and waits for that marker to appear as
+        a standalone output line.  Seeing it proves the shell is reading
+        our input, so a following command will not be swallowed by some
+        other program.
+
+        Each attempt uses a fresh ID: an earlier sync echo that was queued
+        in the tty and executes late only prints a stale marker, which is
+        harmless and cannot satisfy the current check.
+
+        Returns True when synced.
+        """
+        steps = self.INTERRUPT_STEPS if self.interrupt else [[]]
+        for attempt, keys in enumerate(steps, 1):
+            for key in keys:
+                if key.startswith("kill"):
+                    self.send_keys(key)
+                else:
+                    self._log(f"Sending {key} to console")
+                    self.send_key(key)
+                time.sleep(0.3)
+
+            # Log in if the console is sitting at a login/password prompt.
+            for _ in range(3):
+                if not self.handle_login(self.capture_pane(lines=30)):
+                    break
+
+            sync_id = uuid.uuid4().hex[:8]
+            marker = f"---BOARD_SYNC_{sync_id}---"
+            self._log(f"Sync attempt {attempt}: {marker}")
+            self.send_keys(f"echo {marker}")
+
+            deadline = time.time() + sync_timeout
+            while time.time() < deadline:
+                time.sleep(0.5)
+                if self._has_exact_line(self.capture_pane(lines=50), marker):
+                    self._log("Console synced")
+                    return True
+        return False
 
     def get_current_state(self, buffer):
         """Analyze only the bottom of the screen buffer to get the active state."""
@@ -314,18 +388,17 @@ class RemoteBoardController:
         start_marker = f"---BOARD_CMD_START_{run_id}---"
         end_marker = f"---BOARD_CMD_END_{run_id}---"
 
-        # Clear/wake terminal first
-        self._log("Waking up terminal...")
-        self.send_keys("", enter=True)
-        time.sleep(1)
-
-        # Scan bottom of screen for login prompts
-        buffer_init = self.capture_pane(lines=30)
-        if self.handle_login(buffer_init):
-            # Capture again to see if we logged in
-            buffer_init = self.capture_pane(lines=30)
-            self.handle_login(buffer_init)
-            buffer_init = self.capture_pane(lines=30)
+        # Make sure the shell, and not some leftover foreground program, is
+        # what will read the command we are about to type.
+        if not self.sync_console():
+            if self.interrupt:
+                msg = ("console unresponsive even after interrupting; "
+                       "consider --boot-log to reset the board")
+            else:
+                msg = ("console busy (not at a shell prompt) and "
+                       "--no-interrupt given")
+            print(f"[-] Error: {msg}", file=sys.stderr)
+            return self.EXIT_UNSYNCED, ""
 
         # Send command wrapped in echo markers.
         # Use echo instead of printf: U-Boot's hush shell has echo built in but
@@ -367,9 +440,17 @@ class RemoteBoardController:
                     break
 
         if not command_finished:
-            print(f"[-] Error: Command timed out after {self.timeout} seconds.", file=sys.stderr)
             buffer = self.capture_pane(lines=None)
             output_captured = self._extract_between_markers(buffer, start_marker, end_marker)
+            if not self.interrupt:
+                print(f"[-] Error: Command timed out after {self.timeout} seconds; "
+                      f"left running on the board (--no-interrupt).", file=sys.stderr)
+            elif self.sync_console():
+                print(f"[-] Error: Command timed out after {self.timeout} seconds; "
+                      f"interrupted it.", file=sys.stderr)
+            else:
+                print(f"[-] Error: Command timed out after {self.timeout} seconds; "
+                      f"failed to interrupt it, console is unresponsive.", file=sys.stderr)
             return 124, output_captured or ""
 
         return status_code, output_captured
@@ -402,6 +483,10 @@ def main():
     parser.add_argument("--reset-cmd", default=None,
                         help="Override the board's reset command "
                              "({host} and {board} placeholders)")
+    parser.add_argument("--no-interrupt", action="store_true",
+                        help="Do not send Ctrl-C to the console before running the "
+                             "command or after a timeout; fail (exit 125) instead "
+                             "if the console is busy")
     parser.add_argument("--boot-log", action="store_true",
                         help="Reset the board and capture the raw boot log for --timeout seconds")
     parser.add_argument("command", nargs="?", help="The shell command to run on the board")
@@ -425,7 +510,8 @@ def main():
         password=args.password,
         timeout=args.timeout,
         verbose=args.verbose,
-        reset_cmd=reset_cmd
+        reset_cmd=reset_cmd,
+        interrupt=not args.no_interrupt,
     )
 
     if args.boot_log:
